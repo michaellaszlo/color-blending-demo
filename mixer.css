@@ -1,0 +1,36 @@
+body {
+  font-family: sans-serif;
+  color: #444;
+}
+
+.unselectable {
+  -webkit-user-select: none;
+  -khtml-user-drag: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#slider {
+  margin: 20px 0;
+  position: relative;
+}
+.handle {
+  position: absolute;
+  background: #444;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.swatchContainer {
+  float: left;
+}
+.swatchContainer .percent {
+  font-size: 25px;
+  text-align: center;
+}
+.swatchContainer .label {
+  font-size: 17px;
+}
