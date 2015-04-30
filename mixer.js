@@ -73,6 +73,7 @@ Mixer.handleMove = function (event) {
       swatches = g.swatches,
       canvas = g.canvas,
       context = g.context,
+      mixingFunctions = g.mixingFunctions,
       limit = {
         min: (pos == 0 ? 0 : handles[pos-1].right),
         max: (pos == num-2 ? slider.length.total : handles[pos+1].left) -
@@ -101,6 +102,7 @@ Mixer.handleMove = function (event) {
   proportion[pos+1] = proportionSpan - proportion[pos];
   swatches[pos].percent.innerHTML = proportion[pos] + '%';
   swatches[pos+1].percent.innerHTML = proportion[pos+1] + '%';
+  g.mixColors();
 };
 Mixer.handleUp = function (event) {
   var g = Mixer,
@@ -109,6 +111,54 @@ Mixer.handleUp = function (event) {
   window.onmouseup = null;
   handle.left = handle.newLeft;
   handle.right = handle.left + g.style.handle.width;
+};
+
+Mixer.makeFunctionName = function (title) {
+  var parts = ['mix'],
+      tokens = title.split(' ');
+  for (var i = 0; i < tokens.length; ++i) {
+    var token = tokens[i];
+    parts.push(token[0].toUpperCase() + token.substring(1));
+  }
+  return parts.join('');
+};
+
+Mixer.mixAlphaCompositing = function (swatch, label) {
+  return function () {
+  };
+};
+
+Mixer.mixWeightedAverage = function (swatch, label) {
+  return function () {
+    var g = Mixer,
+        swatches = g.swatches,
+        proportion = g.proportion,
+        num = g.num,
+        result = { r: 0, g: 0, b: 0 },
+        subs = ['r', 'g', 'b'];
+    for (var pos = 0; pos < num; ++pos) {
+      for (var i = 0; i < subs.length; ++i) {
+        var sub = subs[i];
+        result[sub] += proportion[pos]/100 * swatches[pos].rgb[sub];
+      }
+    }
+    for (var i = 0; i < subs.length; ++i) {
+      var sub = subs[i];
+      result[sub] = Math.round(result[sub]);
+    }
+    var css = g.toCSS(result);
+    label.rgb.innerHTML = g.toString(result);
+    label.css.innerHTML = css;
+    swatch.style.backgroundColor = css;
+  };
+};
+
+Mixer.mixColors = function () {
+  var g = Mixer,
+      mixingFunctions = g.mixingFunctions;
+  for (var i = 0; i < mixingFunctions.length; ++i) {
+    mixingFunctions[i]();
+  }
 };
 
 Mixer.load = function () {
@@ -125,9 +175,9 @@ Mixer.load = function () {
         rgb = g.color.rgb[name],
         css = g.toCSS(rgb),
         container = g.makeElement('div', 'swatchContainer', '', true),
-        percent = g.makeElement('div', 'percent', '', true),
+        percent = g.makeElement('div', 'title', '', true),
         swatch = g.makeElement('div', 'swatch', '', true);
-    swatches[i] = { css: css, percent: percent };
+    swatches[i] = { rgb: rgb, css: css, percent: percent };
     container.appendChild(percent);
     swatch.style.backgroundColor = css;
     swatch.style.width = style.swatch.width + 'px';
@@ -138,13 +188,10 @@ Mixer.load = function () {
     container.appendChild(g.makeElement('div', 'label', css, true));
     palette.appendChild(container);
   }
+  var totalWidth = num*style.swatch.width + (num-1)*style.swatch.margin.right;
 
   // Initialize proportions.
-  var blend = g.blend = {
-        superimpose: document.getElementById('superimpose'),
-        average: document.getElementById('average')
-      },
-      proportion = g.proportion = new Array(num),
+  var proportion = g.proportion = new Array(num),
       each = Math.floor(100/num);
   for (var i = 0; i < num-1; ++i) {
     proportion[i] = each;
@@ -154,12 +201,43 @@ Mixer.load = function () {
     swatches[i].percent.innerHTML = proportion[i] + '%';
   }
 
+  // Prepare the blended swatches.
+  var blend = g.blend = { container: document.getElementById('blend') },
+      mixers = ['alpha compositing', 'weighted average'],
+      between = (totalWidth - mixers.length*style.swatch.width) /
+          (mixers.length + 1);
+  g.makeUnselectable(blend);
+  blend.container.style.width = totalWidth + 'px';
+  blend.container.style.height = style.swatch.height + 'px';
+  g.mixingFunctions = [];
+  for (var i = 0; i < mixers.length; ++i) {
+    var mixer = mixers[i],
+        container = g.makeElement('div', 'swatchContainer', '', true),
+        title = g.makeElement('div', 'title', mixer, true),
+        swatch = g.makeElement('div', 'swatch', '', true),
+        label = {
+          rgb: g.makeElement('div', 'label', '', true),
+          css: g.makeElement('div', 'label', '', true)
+        };
+    swatch.style.width = style.swatch.width + 'px';
+    swatch.style.height = style.swatch.height + 'px';
+    container.style.left = i*style.swatch.width + (i+1)*between + 'px';
+    container.appendChild(title);
+    container.appendChild(swatch);
+    container.appendChild(label.rgb);
+    container.appendChild(label.css);
+    blend.container.appendChild(container);
+    var functionName = g.makeFunctionName(mixer),
+        mixingFunction = g[functionName](swatch, label);
+    g.mixingFunctions.push(mixingFunction);
+  }
+
   // Assemble the slider widget.
   var slider = g.slider = document.getElementById('slider');
   slider.length = {
-    total: num*style.swatch.width + (num-1)*style.swatch.margin.right
+    total: totalWidth,
+    free: totalWidth - (num-1)*style.handle.width
   };
-  slider.length.free = slider.length.total - (num-1)*style.handle.width;
   var segments = g.segments = new Array(num);
   var tail = slider.length.free;
   for (var i = 0; i < num-1; ++i) {
@@ -197,6 +275,8 @@ Mixer.load = function () {
     handle.onmousedown = g.handleDown;
     slider.appendChild(handle);
   }
+
+  g.mixColors();
 };
 
 window.onload = Mixer.load;

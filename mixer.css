@@ -13,6 +13,18 @@ body {
   user-select: none;
 }
 
+#blend {
+  position: relative;
+  padding: 10px 0 90px;
+}
+#blend .swatchContainer {
+  position: absolute;
+}
+#blend .swatchContainer .title {
+  font-size: 17px;
+  padding-bottom: 5px;
+}
+
 #slider {
   margin: 20px 0;
   position: relative;
@@ -27,7 +39,7 @@ body {
 .swatchContainer {
   float: left;
 }
-.swatchContainer .percent {
+.swatchContainer .title {
   font-size: 25px;
   text-align: center;
 }
