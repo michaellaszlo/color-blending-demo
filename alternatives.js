@@ -25,13 +25,13 @@ Colors.load = function () {
       names = g.names,
       values = g.values,
       containers = {
-        separate: document.getElementById('separate'),
-        dilute: document.getElementById('dilute'),
-        superimpose: document.getElementById('superimpose'),
-        superimposeBlack: document.getElementById('superimposeBlack'),
-        blend: document.getElementById('blend')
+        original: document.getElementById('original'),
+        translucent: document.getElementById('translucent'),
+        layered: document.getElementById('layered'),
+        layeredBlack: document.getElementById('layeredBlack'),
+        averaged: document.getElementById('averaged')
       },
-      blended = { r: 0, g: 0, b: 0 };
+      averaged = { r: 0, g: 0, b: 0 };
   document.body.style.paddingTop = 10*(1+names.length) + 'px';
   for (var i = 0; i < names.length; ++i) {
     var name = names[i],
@@ -41,21 +41,21 @@ Colors.load = function () {
         proportion = 1 / names.length;
     swatch.className = 'swatch';
     swatch.style.backgroundColor = color;
-    separate.appendChild(swatch);
+    containers.original.appendChild(swatch);
 
     swatch = swatch.cloneNode();
     swatch.style.opacity = proportion;
-    dilute.appendChild(swatch);
+    containers.translucent.appendChild(swatch);
 
     swatch = swatch.cloneNode();
     swatch.style.height = 60 + 10*(names.length-1) + 'px';
     swatch.style.top = 10*(1+i-names.length) + 'px';
-    superimpose.appendChild(swatch);
-    superimposeBlack.appendChild(swatch.cloneNode());
+    containers.layered.appendChild(swatch);
+    containers.layeredBlack.appendChild(swatch.cloneNode());
 
-    blended.r += proportion * value.r;
-    blended.g += proportion * value.g;
-    blended.b += proportion * value.b;
+    averaged.r += proportion * value.r;
+    averaged.g += proportion * value.g;
+    averaged.b += proportion * value.b;
   }
 
   swatch = document.createElement('div');
@@ -66,15 +66,15 @@ Colors.load = function () {
   swatch.style.left = '-5px';
   swatch.style.background = '#000';
   swatch.style.zIndex = -10;
-  superimposeBlack.appendChild(swatch);
+  containers.layeredBlack.appendChild(swatch);
 
   swatch = document.createElement('div');
   swatch.className = 'swatch';
-  blended.r = Math.round(blended.r);
-  blended.g = Math.round(blended.g);
-  blended.b = Math.round(blended.b);
-  swatch.style.backgroundColor = g.toColorString(blended);
-  blend.appendChild(swatch);
+  averaged.r = Math.round(averaged.r);
+  averaged.g = Math.round(averaged.g);
+  averaged.b = Math.round(averaged.b);
+  swatch.style.backgroundColor = g.toColorString(averaged);
+  containers.averaged.appendChild(swatch);
 };
 
 window.onload = Colors.load;

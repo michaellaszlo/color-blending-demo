@@ -1,5 +1,3 @@
-// http://stackoverflow.com/questions/29951130/
-
 var Mixer = {
   color: {
     names: ['green', 'blue', 'orange', 'gold'],
@@ -98,10 +96,12 @@ Mixer.handleMove = function (event) {
   handle.style.left = left + 'px';
   var segmentSpan = segments[pos] + segments[pos+1],
       proportionSpan = proportion[pos] + proportion[pos+1];
-  proportion[pos] = Math.round(segments[pos]/segmentSpan * proportionSpan);
-  proportion[pos+1] = proportionSpan - proportion[pos];
-  swatches[pos].percent.innerHTML = proportion[pos] + '%';
-  swatches[pos+1].percent.innerHTML = proportion[pos+1] + '%';
+  if (segmentSpan != 0) {
+    proportion[pos] = Math.round(segments[pos]/segmentSpan * proportionSpan);
+    proportion[pos+1] = proportionSpan - proportion[pos];
+    swatches[pos].percent.innerHTML = proportion[pos] + '%';
+    swatches[pos+1].percent.innerHTML = proportion[pos+1] + '%';
+  }
   g.mixColors();
 };
 Mixer.handleUp = function (event) {
@@ -137,14 +137,14 @@ Mixer.mixAlphaCompositing = function (swatch, label) {
     }
     var alpha = { back: proportion[0]/100 };
     for (var pos = 1; pos < num; ++pos) {
-      var color = swatches[pos].rgb;
+      var fore = swatches[pos].rgb;
       alpha.fore = proportion[pos]/100,
-      alpha.mix = 1 - (1-alpha.fore)*(1-alpha.back);
+      alpha.mix = 1 - (1-alpha.back)*(1-alpha.fore);
       if (alpha.mix >= 1.0e-6) {
         for (var i = 0; i < subs.length; ++i) {
           var x = subs[i];
-          mix[x] = 255 * (color[x]/255 * alpha.fore / alpha.mix +
-              mix[x]/255 * alpha.back * (1 - alpha.fore) / alpha.mix);
+          mix[x] = 255 * (fore[x]/255 * alpha.fore/alpha.mix +
+              mix[x]/255 * alpha.back*(1-alpha.fore)/alpha.mix);
         }
       }
       alpha.back = alpha.mix;
@@ -157,6 +157,7 @@ Mixer.mixAlphaCompositing = function (swatch, label) {
     label.rgb.innerHTML = g.toString(mix);
     label.css.innerHTML = css;
     swatch.style.backgroundColor = css;
+    swatch.style.opacity = alpha.mix;
   };
 };
 
