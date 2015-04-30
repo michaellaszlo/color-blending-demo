@@ -1,0 +1,23 @@
+body {
+  font-family: sans-serif;
+  font-size: 24px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.display {
+  width: 120px;
+  float: left;
+}
+.swatch {
+  width: 100px;
+  height: 60px;
+  margin-bottom: 10px;
+}
+.superimpose {
+  position: relative;
+  height: 60px;
+}
+.superimpose .swatch {
+  position: absolute;
+}
