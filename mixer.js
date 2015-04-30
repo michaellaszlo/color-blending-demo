@@ -125,6 +125,38 @@ Mixer.makeFunctionName = function (title) {
 
 Mixer.mixAlphaCompositing = function (swatch, label) {
   return function () {
+    var g = Mixer,
+        swatches = g.swatches,
+        proportion = g.proportion,
+        num = g.num,
+        mix = {},
+        subs = ['r', 'g', 'b'];
+    for (var i = 0; i < subs.length; ++i) {
+      var x = subs[i];
+      mix[x] = swatches[0].rgb[x];
+    }
+    var alpha = { back: proportion[0]/100 };
+    for (var pos = 1; pos < num; ++pos) {
+      var color = swatches[pos].rgb;
+      alpha.fore = proportion[pos]/100,
+      alpha.mix = 1 - (1-alpha.fore)*(1-alpha.back);
+      if (alpha.mix >= 1.0e-6) {
+        for (var i = 0; i < subs.length; ++i) {
+          var x = subs[i];
+          mix[x] = 255 * (color[x]/255 * alpha.fore / alpha.mix +
+              mix[x]/255 * alpha.back * (1 - alpha.fore) / alpha.mix);
+        }
+      }
+      alpha.back = alpha.mix;
+    }
+    for (var i = 0; i < subs.length; ++i) {
+      var x = subs[i];
+      mix[x] = Math.round(mix[x]);
+    }
+    var css = g.toCSS(mix);
+    label.rgb.innerHTML = g.toString(mix);
+    label.css.innerHTML = css;
+    swatch.style.backgroundColor = css;
   };
 };
 
@@ -134,20 +166,20 @@ Mixer.mixWeightedAverage = function (swatch, label) {
         swatches = g.swatches,
         proportion = g.proportion,
         num = g.num,
-        result = { r: 0, g: 0, b: 0 },
+        mix = { r: 0, g: 0, b: 0 },
         subs = ['r', 'g', 'b'];
     for (var pos = 0; pos < num; ++pos) {
       for (var i = 0; i < subs.length; ++i) {
-        var sub = subs[i];
-        result[sub] += proportion[pos]/100 * swatches[pos].rgb[sub];
+        var x = subs[i];
+        mix[x] += proportion[pos]/100 * swatches[pos].rgb[x];
       }
     }
     for (var i = 0; i < subs.length; ++i) {
-      var sub = subs[i];
-      result[sub] = Math.round(result[sub]);
+      var x = subs[i];
+      mix[x] = Math.round(mix[x]);
     }
-    var css = g.toCSS(result);
-    label.rgb.innerHTML = g.toString(result);
+    var css = g.toCSS(mix);
+    label.rgb.innerHTML = g.toString(mix);
     label.css.innerHTML = css;
     swatch.style.backgroundColor = css;
   };
