@@ -1,6 +1,13 @@
-# little-color-mixer
-A web-based color mixer that lets you mix a palette of predefined colors into a new color. Move the sliders to vary the proportion of each color. The colors are mixed in two ways: by alpha compositing and by arithmetic mean.
+# Color blending demo
 
-I wrote this code to answer a question on Stack Overflow:
+## How to make a new color from a combination of existing colors
+
+This web page was written to answer a Stack Overflow question:
 
 http://stackoverflow.com/questions/29951130/how-can-i-create-a-color-with-values-for-green-blue-orange-and-gold-only/
+
+The page presents a palette of four predefined colors that are mixed
+with two methods&mdash;alpha compositing and arithmetic average&mdash;to
+make a pair of new colors. The proportions of the predefined colors can
+be adjusted by sliding the bars above the color palette.
+
