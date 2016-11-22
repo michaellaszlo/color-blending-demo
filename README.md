@@ -11,3 +11,5 @@ with two methods&mdash;alpha compositing and arithmetic average&mdash;to
 make a pair of new colors. The proportions of the predefined colors can
 be adjusted by sliding the bars above the color palette.
 
+![Color blending demo](screenshot.png)
+
