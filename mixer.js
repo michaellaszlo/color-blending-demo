@@ -25,7 +25,8 @@ var Mixer = (function () {
       blend,
       swatches,
       canvas,
-      context;
+      context,
+      mixingFunctions;
 
   function toHex2(decimal) {
     var hex = decimal.toString(16);
@@ -109,7 +110,7 @@ var Mixer = (function () {
     activeHandle.right = activeHandle.left + style.handle.width;
   }
 
-  function mixAlphaCompositing(swatch, label) {
+  function makeAlphaCompositingMixer(swatch, label) {
     console.log(swatch, label);
     return function () {
       var mix = {},
@@ -144,7 +145,7 @@ var Mixer = (function () {
     };
   }
 
-  function mixWeightedAverage(swatch, label) {
+  function makeWeightedAverageMixer(swatch, label) {
     return function () {
       var mix = { r: 0, g: 0, b: 0 },
           subs = ['r', 'g', 'b'];
@@ -166,10 +167,10 @@ var Mixer = (function () {
   }
 
   function mixColors() {
-    console.log('before', proportion);
-    mixAlphaCompositing();
-    console.log('after', proportion);
-    mixWeightedAverage();
+    var i;
+    for (i = 0; i < mixingFunctions.length; ++i) {
+      mixingFunctions[i]();
+    }
   }
 
   function load() {
@@ -218,6 +219,7 @@ var Mixer = (function () {
     makeUnselectable(blend);
     blend.container.style.width = totalWidth + 'px';
     blend.container.style.height = style.swatch.height + 'px';
+    mixingFunctions = [];
     for (var i = 0; i < mixers.length; ++i) {
       var mixer = mixers[i],
           container = makeElement('div', 'swatchContainer', '', true),
@@ -236,9 +238,9 @@ var Mixer = (function () {
       container.appendChild(label.css);
       blend.container.appendChild(container);
       if (mixer == 'alpha compositing') {
-        mixAlphaCompositing(swatch, label);
+        mixingFunctions.push(makeAlphaCompositingMixer(swatch, label));
       } else {
-        mixWeightedAverage(swatch, label);
+        mixingFunctions.push(makeWeightedAverageMixer(swatch, label));
       }
     }
 
