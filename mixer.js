@@ -13,14 +13,14 @@ var Mixer = (function () {
         slider: { height: 20 },
         handle: { width: 20, height: 34 }
       },
+      handleWidth = style.handle.width,
+      segments,
+      proportion,
       mouseX,
       activeHandle,
       handles,
       num,
       slider,
-      proportion,
-      segments,
-      handleWidth,
       palette,
       blend,
       swatches,
@@ -111,7 +111,6 @@ var Mixer = (function () {
   }
 
   function makeAlphaCompositingMixer(swatch, label) {
-    console.log(swatch, label);
     return function () {
       var mix = {},
           subs = ['r', 'g', 'b'];
